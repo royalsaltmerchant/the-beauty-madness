@@ -190,66 +190,6 @@ class TimePicker {
     const days = this.viewNextWeek ? getNextWeek() : getCurrentWeek();
     const appointments = await this.getCurrentAppointmentTimes(days);
 
-    const divsToAppend = [];
-
-    // days
-    const daysDiv = document.createElement("div");
-    daysDiv.style.display = "flex";
-    days.forEach((day) => {
-      const dayString =
-        day.toLocaleDateString("it-IT", { weekday: "long" }) +
-        " " +
-        day.toLocaleDateString("it-IT", {
-          month: "numeric",
-          day: "numeric",
-        });
-      const elem = document.createElement("div");
-      elem.className = "time-picker-grid-day";
-      elem.innerText = dayString;
-      daysDiv.appendChild(elem);
-    });
-    divsToAppend.push(daysDiv);
-    // times
-    this.times.forEach((time) => {
-      const timesDiv = document.createElement("div");
-      timesDiv.style.display = "flex";
-      days.forEach((day) => {
-        const elem = document.createElement("div");
-        const calculatedTime = this.getCalculatedTime(day, time).getTime();
-
-        if (appointments.includes(calculatedTime)) {
-          elem.className = "time-picker-grid-time-unavailable";
-          elem.innerText = new Date(calculatedTime).toLocaleTimeString(
-            "it-IT",
-            { hour: "2-digit", minute: "2-digit" }
-          );
-          timesDiv.appendChild(elem);
-          return;
-        }
-
-        elem.className = "time-picker-grid-time";
-
-        if (this.selectedDate && this.selectedDate === calculatedTime) {
-          elem.className = "time-picker-grid-time-selected";
-        }
-
-        elem.innerText = new Date(calculatedTime).toLocaleTimeString("it-IT", {
-          hour: "2-digit",
-          minute: "2-digit",
-        });
-        // even handler
-        elem.addEventListener("click", () => {
-          this.selectedDate = calculatedTime;
-          elem.className = "time-picker-grid-time-selected";
-          this.render();
-        });
-
-        timesDiv.appendChild(elem);
-      });
-
-      divsToAppend.push(timesDiv);
-    });
-
     const switchWeeksButton = document.createElement("button");
     switchWeeksButton.innerText = this.viewNextWeek
       ? "View This Week"
@@ -267,12 +207,106 @@ class TimePicker {
     // final append
     this.parentElem.append(
       switchWeeksButton,
-      refreshButton,
-      ...divsToAppend,
+      refreshButton
+    );
+    
+    const gridDiv = document.createElement("div");
+    new Grid({
+      parentElem: gridDiv,
+      days,
+      times: this.times,
+      appointments,
+      getCalculatedTime: this.getCalculatedTime,
+      setSelectedDate: (date) => this.selectedDate = date
+    })
+
+    this.parentElem.append(
+      gridDiv,
       document.createElement("br"),
       confirmButton
-    );
+    )
   };
 }
 
 new TimePicker();
+
+class Grid {
+  constructor(props) {
+    this.parentElem = props.parentElem,
+    this.days = props.days
+    this.times = props.times
+    this.appointments = props.appointments
+    this.getCalculatedTime = props.getCalculatedTime
+    this.setSelectedDate = props.setSelectedDate
+
+    this.highlightedDate = null;
+
+    this.render()
+  }
+
+  render = () => {
+    // clear
+    this.parentElem.innerHTML = "";
+
+    const divsToAppend = [];
+    // days
+    const daysDiv = document.createElement("div");
+    daysDiv.style.display = "flex";
+    this.days.forEach((day) => {
+      const dayString =
+        day.toLocaleDateString("it-IT", { weekday: "long" }) +
+        " " +
+        day.toLocaleDateString("it-IT", {
+          month: "numeric",
+          day: "numeric",
+        });
+      const elem = document.createElement("div");
+      elem.className = "time-picker-grid-day";
+      elem.innerText = dayString;
+      daysDiv.appendChild(elem);
+    });
+    divsToAppend.push(daysDiv);
+    // times
+    this.times.forEach((time) => {
+      const timesDiv = document.createElement("div");
+      timesDiv.style.display = "flex";
+      this.days.forEach((day) => {
+        const elem = document.createElement("div");
+        const calculatedTime = this.getCalculatedTime(day, time).getTime();
+  
+        if (this.appointments.includes(calculatedTime)) {
+          elem.className = "time-picker-grid-time-unavailable";
+          elem.innerText = new Date(calculatedTime).toLocaleTimeString(
+            "it-IT",
+            { hour: "2-digit", minute: "2-digit" }
+          );
+          timesDiv.appendChild(elem);
+          return;
+        }
+  
+        elem.className = "time-picker-grid-time";
+
+        if (this.highlightedDate && this.highlightedDate === calculatedTime) {
+          elem.className = "time-picker-grid-time-selected";
+        }
+  
+        elem.innerText = new Date(calculatedTime).toLocaleTimeString("it-IT", {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+        // even handler
+        elem.addEventListener("click", () => {
+          this.highlightedDate = calculatedTime;
+          this.setSelectedDate(calculatedTime);
+          elem.className = "time-picker-grid-time-selected";
+          this.render();
+        });
+  
+        timesDiv.appendChild(elem);
+      });
+  
+      divsToAppend.push(timesDiv);
+    });
+    this.parentElem.append(...divsToAppend)
+  }
+}

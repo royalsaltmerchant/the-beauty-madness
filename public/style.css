@@ -1,0 +1,63 @@
+a {
+  border: 1px solid lightblue;
+  padding: 5px 10px;
+  margin-bottom: 10px;
+  width: 100px;
+}
+
+a:hover {
+  background-color: blueviolet;
+}
+
+#time-picker {
+  display: flex;
+  flex-direction: column;
+}
+
+.time-picker-grid-day {
+  border: 1px solid gray;
+  padding: 5px;
+  width: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.time-picker-grid-time {
+  border: 1px solid gray;
+  padding: 5px;
+  width: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.time-picker-grid-time-unavailable {
+  border: 1px solid gray;
+  padding: 5px;
+  width: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: red;
+}
+
+.time-picker-grid-time:hover {
+  background-color: blue;
+}
+
+.time-picker-grid-time-selected {
+  border: 1px solid gray;
+  padding: 5px;
+  width: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background-color: azure;
+}
+
+button {
+  width: fit-content;
+}

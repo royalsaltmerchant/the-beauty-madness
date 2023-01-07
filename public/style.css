@@ -1,8 +1,30 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-size: 18px;
+}
+
+body {
+  height: 100vh;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  font-family: sans-serif;
+  background-color: rgb(33, 33, 33);
+  color: white;
+}
+
 a {
+  color: rgb(160, 197, 255);
   border: 1px solid lightblue;
-  padding: 5px 10px;
-  margin-bottom: 10px;
-  width: 100px;
+  width: fit-content;
+  padding: 10px;
+}
+
+button {
+  background: rgb(190, 190, 255);
+  padding: 3px 6px;
 }
 
 a:hover {
@@ -34,17 +56,17 @@ a:hover {
 }
 
 .time-picker-grid-time-unavailable {
+  color: rgb(75, 75, 75);
   border: 1px solid gray;
   padding: 5px;
   width: 100px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: red;
 }
 
 .time-picker-grid-time:hover {
-  background-color: blue;
+  background-color: blueviolet;
 }
 
 .time-picker-grid-time-selected {
@@ -55,7 +77,7 @@ a:hover {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  background-color: azure;
+  background-color: rgb(108, 158, 158);
 }
 
 button {

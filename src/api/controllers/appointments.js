@@ -3,12 +3,11 @@ const {
   getAppointmentsQuery,
   removeAppointmentQuery,
   editAppointmentQuery,
-  getAppointmentByDateQuery
+  getAppointmentByDateQuery,
 } = require("../queries/appointments.js");
-const { v4: uuidv4 } = require('uuid');
+const { v4: uuidv4 } = require("uuid");
 
 async function addAppointment(req, res, next) {
-  
   const uuid = uuidv4();
   req.body.uuid = uuid;
   try {
@@ -22,9 +21,12 @@ async function addAppointment(req, res, next) {
 }
 
 async function getAppointments(req, res, next) {
-  console.log(req.params)
+  console.log(req.params);
   try {
-    const data = await getAppointmentsQuery(req.params.start_time, req.params.end_time);
+    const data = await getAppointmentsQuery(
+      req.params.start_time,
+      req.params.end_time
+    );
 
     res.send(data.rows);
   } catch (err) {

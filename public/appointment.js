@@ -114,8 +114,16 @@ class TimePicker {
             calculatedTimes.push(calculatedTime);
           });
         });
-        // calculate current appointments booked
+
+        // removal
         const appointmentTimes = [];
+        // remove the past 
+        calculatedTimes.forEach((time) => {
+          if (time < Date.now()) {
+            appointmentTimes.push(time);
+          }
+        });
+        // remove previously booke appointments
         data.forEach((appointment) => {
           const initialAppointmentTime = new Date(
             appointment.date_of
@@ -205,11 +213,8 @@ class TimePicker {
     confirmButton.addEventListener("click", this.confirmDate);
 
     // final append
-    this.parentElem.append(
-      switchWeeksButton,
-      refreshButton
-    );
-    
+    this.parentElem.append(switchWeeksButton, refreshButton);
+
     const gridDiv = document.createElement("div");
     new Grid({
       parentElem: gridDiv,
@@ -217,14 +222,14 @@ class TimePicker {
       times: this.times,
       appointments,
       getCalculatedTime: this.getCalculatedTime,
-      setSelectedDate: (date) => this.selectedDate = date
-    })
+      setSelectedDate: (date) => (this.selectedDate = date),
+    });
 
     this.parentElem.append(
       gridDiv,
       document.createElement("br"),
       confirmButton
-    )
+    );
   };
 }
 
@@ -232,16 +237,15 @@ new TimePicker();
 
 class Grid {
   constructor(props) {
-    this.parentElem = props.parentElem,
-    this.days = props.days
-    this.times = props.times
-    this.appointments = props.appointments
-    this.getCalculatedTime = props.getCalculatedTime
-    this.setSelectedDate = props.setSelectedDate
+    (this.parentElem = props.parentElem), (this.days = props.days);
+    this.times = props.times;
+    this.appointments = props.appointments;
+    this.getCalculatedTime = props.getCalculatedTime;
+    this.setSelectedDate = props.setSelectedDate;
 
     this.highlightedDate = null;
 
-    this.render()
+    this.render();
   }
 
   render = () => {
@@ -273,7 +277,7 @@ class Grid {
       this.days.forEach((day) => {
         const elem = document.createElement("div");
         const calculatedTime = this.getCalculatedTime(day, time).getTime();
-  
+
         if (this.appointments.includes(calculatedTime)) {
           elem.className = "time-picker-grid-time-unavailable";
           elem.innerText = new Date(calculatedTime).toLocaleTimeString(
@@ -283,13 +287,13 @@ class Grid {
           timesDiv.appendChild(elem);
           return;
         }
-  
+
         elem.className = "time-picker-grid-time";
 
         if (this.highlightedDate && this.highlightedDate === calculatedTime) {
           elem.className = "time-picker-grid-time-selected";
         }
-  
+
         elem.innerText = new Date(calculatedTime).toLocaleTimeString("it-IT", {
           hour: "2-digit",
           minute: "2-digit",
@@ -301,12 +305,12 @@ class Grid {
           elem.className = "time-picker-grid-time-selected";
           this.render();
         });
-  
+
         timesDiv.appendChild(elem);
       });
-  
+
       divsToAppend.push(timesDiv);
     });
-    this.parentElem.append(...divsToAppend)
-  }
+    this.parentElem.append(...divsToAppend);
+  };
 }

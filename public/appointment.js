@@ -117,7 +117,7 @@ class TimePicker {
 
         // removal
         const appointmentTimes = [];
-        // remove the past 
+        // remove the past
         calculatedTimes.forEach((time) => {
           if (time < Date.now()) {
             appointmentTimes.push(time);
@@ -222,12 +222,37 @@ class TimePicker {
       times: this.times,
       appointments,
       getCalculatedTime: this.getCalculatedTime,
-      setSelectedDate: (date) => (this.selectedDate = date),
+      setSelectedDate: (date) => {
+        var searchParams = new URLSearchParams(window.location.search);
+        var length = searchParams.get("length");
+
+        this.selectedDate = date
+        date = new Date(date)
+        const dateString = date.toLocaleTimeString(
+          "it-IT",
+          {
+            month: "long",
+            day: "numeric",
+            weekday: "long",
+            hour: "2-digit",
+            minute: "2-digit"
+          }
+        );
+        // calculate ending time
+        const initialAppointmentTime = date.getTime()
+        const endTimeInMilliseconds = length * 60 * 60 * 1000 + initialAppointmentTime;
+        const endTimeString = new Date(endTimeInMilliseconds).toLocaleTimeString("it-IT", {hour: "2-digit", minute: "2-digit"})
+        document.getElementById("selected-date-info").innerHTML = /*html*/ `<div>${dateString} - ${endTimeString}</div>`
+      },
     });
+
+    const selectedDateInfoElem = document.createElement("div");
+    selectedDateInfoElem.id = "selected-date-info";
 
     this.parentElem.append(
       gridDiv,
       document.createElement("br"),
+      selectedDateInfoElem,
       confirmButton
     );
   };
@@ -258,8 +283,8 @@ class Grid {
     daysDiv.style.display = "flex";
     this.days.forEach((day) => {
       const dayString =
-        day.toLocaleDateString("it-IT", { weekday: "long" }) +
-        " " +
+        // day.toLocaleDateString("it-IT", { weekday: "long" }) +
+        // " " +
         day.toLocaleDateString("it-IT", {
           month: "numeric",
           day: "numeric",

@@ -2,11 +2,15 @@ const db = require('../dbconfig')
 
 async function addAppointmentQuery(data) {
   const query = {
-    text: /*sql*/ `insert into public."Appointment" (date_of, uuid, length_in_hours) values($1,$2,$3) returning *`,
+    text: /*sql*/ `insert into public."Appointment" (date_of, uuid, length_in_hours, type, name, email, phone_number) values($1,$2,$3,$4,$5,$6,$7) returning *`,
     values: [
       data.date_of,
       data.uuid,
-      data.length_in_hours
+      data.length_in_hours,
+      data.type,
+      data.name,
+      data.email,
+      data.phone_number
     ]
   }
   return await db.query(query)

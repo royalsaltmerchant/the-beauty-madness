@@ -19,12 +19,6 @@ async function updateAppointmentBySessionId(req, res, next) {
         payment_id: session.id,
       }
     );
-    // send confirmation email
-    mail.sendMessage({
-      email: session.customer_details.email,
-      title: "Testing",
-      message: `Here is your appointment ID: ${appointmentData.rows[0].uuid}`,
-    });
 
     res.send(200);
   } catch (err) {

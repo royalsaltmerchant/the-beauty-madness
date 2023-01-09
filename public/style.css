@@ -1,3 +1,13 @@
+:root {
+  --main-purple: rgb(87, 69, 119);
+  --main-orange: rgb(119, 87, 69);
+  --main-blue: rgb(131, 178, 255);
+  --dark-blue: rgb(63, 83, 116);
+  --main-pink: #ffddf8;
+  --main-gray: rgb(81, 81, 81);
+  --dark-gray: rgb(58, 58, 58);
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -11,24 +21,72 @@ body {
   flex: 1;
   flex-direction: column;
   font-family: sans-serif;
-  background-color: rgb(33, 33, 33);
-  color: white;
+  background-color: rgb(36, 36, 36);
+  color: rgb(233, 233, 233);
 }
 
 a {
-  color: rgb(160, 197, 255);
-  border: 1px solid lightblue;
+  text-decoration: none;
+  color: var(--main-blue);
+  /* border: 1px solid rgb(201, 201, 201); */
   width: fit-content;
   padding: 10px;
-}
-
-button {
-  background: rgb(190, 190, 255);
-  padding: 3px 6px;
+  transition: 0.1s all ease-out;
 }
 
 a:hover {
-  background-color: blueviolet;
+  color: var(--main-purple);
+}
+
+button {
+  width: fit-content;
+  background: var(--main-purple);
+  color: inherit;
+  /* border: 0.1px solid var(--main-gray); */
+  padding: 2px 4px;
+  font: inherit;
+  cursor: pointer;
+  transition: 0.1s all ease-out;
+}
+
+button:hover {
+  background-color: var(--dark-blue);
+}
+
+nav {
+  background-color: var(--dark-gray);
+  height: 35px;
+  padding: 10px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+main {
+  padding: 10px;
+  flex: 1;
+}
+
+form {
+  /* display: flex;
+  flex-direction: column; */
+  /* border: 1px solid red;
+  height: 300px;
+  width: 300px; */
+}
+
+#site-title {
+  font-size: 18px;
+  color: var(--main-pink);
+}
+#site-title:hover {
+  opacity: 0.7;
+}
+
+#selected-date {
+  font-size: 20px;
+  color: var(--main-pink);
 }
 
 #time-picker {
@@ -36,50 +94,65 @@ a:hover {
   flex-direction: column;
 }
 
+#grid {
+  display: flex;
+  flex-direction: column;
+  overflow: scroll;
+}
+
+.grid-row-day {
+  display: flex;
+  margin-bottom: 5px;
+}
+.grid-row-time {
+  display: flex;
+}
+
 .time-picker-grid-day {
-  border: 1px solid gray;
+  border: 1px solid var(--main-gray);
   padding: 5px;
-  width: 100px;
+  min-width: 80px;
+  height: 50px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .time-picker-grid-time {
-  border: 1px solid gray;
+  border: 1px solid var(--main-gray);
   padding: 5px;
-  width: 100px;
+  min-width: 80px;
+  height: 50px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  transition: 0.1s all ease-out;
 }
 
 .time-picker-grid-time-unavailable {
   color: rgb(75, 75, 75);
-  border: 1px solid gray;
+  border: 1px solid var(--main-gray);
   padding: 5px;
-  width: 100px;
+  min-width: 80px;
+  height: 50px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .time-picker-grid-time:hover {
-  background-color: blueviolet;
+  background-color: var(--main-purple);
 }
 
 .time-picker-grid-time-selected {
-  border: 1px solid gray;
+  border: 1px solid var(--main-gray);
   padding: 5px;
-  width: 100px;
+  min-width: 80px;
+  height: 50px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  background-color: rgb(108, 158, 158);
-}
-
-button {
-  width: fit-content;
+  background-color: var(--dark-blue);
 }

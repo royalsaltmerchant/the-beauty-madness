@@ -40,7 +40,7 @@ async function handleConfirmation() {
   a.href = "/index.html"
   const div = document.getElementById("confirmation-message")
   div.innerText = "Success! See you at the appointment!"
-  document.body.appendChild(a)
+  div.after(a)
   
 }
 

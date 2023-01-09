@@ -1,28 +1,7 @@
-function getCurrentWeek() {
-  let curr = new Date();
-  let week = [];
-
-  for (let i = 1; i <= 7; i++) {
-    let first = curr.getDate() - curr.getDay() + i;
-    let day = new Date(curr.setDate(first));
-    day.setHours(0, 0, 0, 0);
-    week.push(day);
-  }
-  return week;
-}
-
-function getNextWeek() {
-  let curr = new Date();
-  let week = [];
-  curr.setDate(curr.getDate() - curr.getDay() + 7);
-  for (let i = 1; i <= 7; i++) {
-    let first = curr.getDate() - curr.getDay() + i;
-    let day = new Date(curr.setDate(first));
-    day.setHours(0, 0, 0, 0);
-    week.push(day);
-  }
-  return week;
-}
+import { getCurrentWeek, getNextWeek } from "./lib/weeksUtility.js";
+import createElement from "./lib/createElement.js";
+import Grid from "./lib/Grid.js";
+import { enforceFormat, formatToPhone } from "./lib/phoneUtils.js";
 
 class TimePicker {
   constructor() {
@@ -42,7 +21,13 @@ class TimePicker {
     ];
 
     this.viewNextWeek = false; // either current or next
+    this.hasSelectedDate = false;
     this.loading = false;
+
+    // form
+    this.name = "";
+    this.email = "";
+    this.phoneNumber = "";
 
     this.render();
   }
@@ -52,9 +37,15 @@ class TimePicker {
     this.render();
   };
 
+  toggleHasSelectedDate = () => {
+    this.hasSelectedDate = !this.hasSelectedDate;
+    this.render();
+  };
+
   newAppointment = async (date) => {
     var searchParams = new URLSearchParams(window.location.search);
     var length = searchParams.get("length");
+    var service = searchParams.get("service")
 
     try {
       // refetch appointments to check if conflict
@@ -72,6 +63,10 @@ class TimePicker {
         body: JSON.stringify({
           date_of: date,
           length_in_hours: length,
+          type: service,
+          name: this.name,
+          email: this.email,
+          phone_number: this.phoneNumber
         }),
       });
       const data = await res.json();
@@ -81,6 +76,7 @@ class TimePicker {
         window.alert(
           "We are sorry, this time has already been booked, please select a different time."
         );
+        this.toggleHasSelectedDate();
         this.render();
       } else throw new Error();
     } catch (err) {
@@ -159,6 +155,7 @@ class TimePicker {
 
   confirmDate = async () => {
     const date = new Date(this.selectedDate);
+
     this.loading = true;
     this.render();
     const appointment = await this.newAppointment(date);
@@ -189,33 +186,108 @@ class TimePicker {
     return newDate;
   };
 
+  renderPersonalInfoForm = async () => {
+    this.parentElem.append(
+      createElement(
+        "h1",
+        {},
+        "Please provide some information so we can contact you if necessary"
+      ),
+      createElement("br"),
+      createElement("form", {}, [
+        createElement("div", {}, [
+          createElement("div", {}, "Name"),
+          createElement(
+            "input",
+            {
+              id: "name",
+              name: "name",
+              value: this.name,
+              placeholder: "Full Name",
+              required: true,
+            }
+          ),
+        ]),
+        createElement("br"),
+        createElement("div", {}, [
+          createElement("div", {type: "email"}, "Email"),
+          createElement(
+            "input",
+            {
+              id: "email",
+              name: "email",
+              value: this.email,
+              placeholder: "Email Address",
+              required: true,
+            }
+          ),
+        ]),
+        createElement("br"),
+        createElement("div", {}, [
+          createElement("div", {}, "Phone Number"),
+          createElement(
+            "input",
+            {
+              maxlength: "16",
+              id: "phone-number",
+              name: "phone-number",
+              placeholder: "Phone Number",
+              value: this.phoneNumber,
+              required: true,
+            },
+            [
+              { type: "keydown", event: enforceFormat },
+              { type: "keyup", event: formatToPhone },
+            ]
+          ),
+        ]),
+        createElement("br"),
+        createElement("button", {type: "submit"}, "Complete")
+      ], {
+        type: "submit",
+        event: (e) => {
+          e.preventDefault();
+          console.log(e);
+          const formData = new FormData(e.target);
+          const formProps = Object.fromEntries(formData);
+          this.name = formProps.name;
+          this.phoneNumber = formProps["phone-number"];
+          this.email = formProps.email;
+          this.confirmDate()
+        },
+      })
+    );
+  };
+
   render = async () => {
     // clear
     this.parentElem.innerHTML = "";
     // loading
     if (this.loading) return this.renderLoading();
+    // render personal info form
+    if (this.hasSelectedDate) return this.renderPersonalInfoForm();
 
+    // switch weeks button
+    const switchWeeksButton = createElement(
+      "button",
+      { style: "margin-right: 5px;" },
+      this.viewNextWeek ? "View This Week" : "View Next Week",
+      { type: "click", event: this.toggleViewNextWeek }
+    );
+    // refresh button
+    const refreshButton = createElement("button", {}, "Refresh", {
+      type: "click",
+      event: this.render,
+    });
+    // div for buttons
+    const buttonDiv = createElement("div", {}, [
+      switchWeeksButton,
+      refreshButton,
+    ]);
+    // grid
     const days = this.viewNextWeek ? getNextWeek() : getCurrentWeek();
     const appointments = await this.getCurrentAppointmentTimes(days);
-
-    const switchWeeksButton = document.createElement("button");
-    switchWeeksButton.innerText = this.viewNextWeek
-      ? "View This Week"
-      : "View Next Week";
-    switchWeeksButton.addEventListener("click", this.toggleViewNextWeek);
-
-    const refreshButton = document.createElement("button");
-    refreshButton.innerText = "Refresh";
-    refreshButton.addEventListener("click", this.render);
-
-    const confirmButton = document.createElement("button");
-    confirmButton.innerText = "Confirm";
-    confirmButton.addEventListener("click", this.confirmDate);
-
-    // final append
-    this.parentElem.append(switchWeeksButton, refreshButton);
-
-    const gridDiv = document.createElement("div");
+    const gridDiv = createElement("div", { id: "grid" });
     new Grid({
       parentElem: gridDiv,
       days,
@@ -226,116 +298,58 @@ class TimePicker {
         var searchParams = new URLSearchParams(window.location.search);
         var length = searchParams.get("length");
 
-        this.selectedDate = date
-        date = new Date(date)
-        const dateString = date.toLocaleTimeString(
-          "it-IT",
-          {
-            month: "long",
-            day: "numeric",
-            weekday: "long",
-            hour: "2-digit",
-            minute: "2-digit"
-          }
-        );
+        this.selectedDate = date;
+        date = new Date(date);
+        const dateString = date.toLocaleTimeString("it-IT", {
+          month: "long",
+          day: "numeric",
+          weekday: "long",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
         // calculate ending time
-        const initialAppointmentTime = date.getTime()
-        const endTimeInMilliseconds = length * 60 * 60 * 1000 + initialAppointmentTime;
-        const endTimeString = new Date(endTimeInMilliseconds).toLocaleTimeString("it-IT", {hour: "2-digit", minute: "2-digit"})
-        document.getElementById("selected-date-info").innerHTML = /*html*/ `<div>${dateString} - ${endTimeString}</div>`
+        const initialAppointmentTime = date.getTime();
+        const endTimeInMilliseconds =
+          length * 60 * 60 * 1000 + initialAppointmentTime;
+        const endTimeString = new Date(
+          endTimeInMilliseconds
+        ).toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
+        document.getElementById(
+          "selected-date-info"
+        ).innerHTML = /*html*/ `<div id="selected-date">${dateString} - ${endTimeString}</div>`;
+
+        nextButton.style.visibility = "visible";
+        window.scrollTo(0, document.body.scrollHeight);
       },
     });
-
-    const selectedDateInfoElem = document.createElement("div");
+    // info
+    const selectedDateInfoElem = createElement("div");
     selectedDateInfoElem.id = "selected-date-info";
 
+    // next button
+    const nextButton = createElement(
+      "button",
+      { style: "visibility: hidden;" },
+      "Next",
+      {
+        type: "click",
+        event: () => this.toggleHasSelectedDate(),
+      }
+    );
+
+    // render
     this.parentElem.append(
+      createElement("h1", {}, "Choose a time"),
+      createElement("br"),
+      buttonDiv,
+      createElement("br"),
       gridDiv,
-      document.createElement("br"),
+      createElement("br"),
       selectedDateInfoElem,
-      confirmButton
+      createElement("br"),
+      nextButton
     );
   };
 }
 
 new TimePicker();
-
-class Grid {
-  constructor(props) {
-    (this.parentElem = props.parentElem), (this.days = props.days);
-    this.times = props.times;
-    this.appointments = props.appointments;
-    this.getCalculatedTime = props.getCalculatedTime;
-    this.setSelectedDate = props.setSelectedDate;
-
-    this.highlightedDate = null;
-
-    this.render();
-  }
-
-  render = () => {
-    // clear
-    this.parentElem.innerHTML = "";
-
-    const divsToAppend = [];
-    // days
-    const daysDiv = document.createElement("div");
-    daysDiv.style.display = "flex";
-    this.days.forEach((day) => {
-      const dayString =
-        // day.toLocaleDateString("it-IT", { weekday: "long" }) +
-        // " " +
-        day.toLocaleDateString("it-IT", {
-          month: "numeric",
-          day: "numeric",
-        });
-      const elem = document.createElement("div");
-      elem.className = "time-picker-grid-day";
-      elem.innerText = dayString;
-      daysDiv.appendChild(elem);
-    });
-    divsToAppend.push(daysDiv);
-    // times
-    this.times.forEach((time) => {
-      const timesDiv = document.createElement("div");
-      timesDiv.style.display = "flex";
-      this.days.forEach((day) => {
-        const elem = document.createElement("div");
-        const calculatedTime = this.getCalculatedTime(day, time).getTime();
-
-        if (this.appointments.includes(calculatedTime)) {
-          elem.className = "time-picker-grid-time-unavailable";
-          elem.innerText = new Date(calculatedTime).toLocaleTimeString(
-            "it-IT",
-            { hour: "2-digit", minute: "2-digit" }
-          );
-          timesDiv.appendChild(elem);
-          return;
-        }
-
-        elem.className = "time-picker-grid-time";
-
-        if (this.highlightedDate && this.highlightedDate === calculatedTime) {
-          elem.className = "time-picker-grid-time-selected";
-        }
-
-        elem.innerText = new Date(calculatedTime).toLocaleTimeString("it-IT", {
-          hour: "2-digit",
-          minute: "2-digit",
-        });
-        // even handler
-        elem.addEventListener("click", () => {
-          this.highlightedDate = calculatedTime;
-          this.setSelectedDate(calculatedTime);
-          elem.className = "time-picker-grid-time-selected";
-          this.render();
-        });
-
-        timesDiv.appendChild(elem);
-      });
-
-      divsToAppend.push(timesDiv);
-    });
-    this.parentElem.append(...divsToAppend);
-  };
-}
